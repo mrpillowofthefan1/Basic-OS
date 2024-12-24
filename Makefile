@@ -1,13 +1,13 @@
 all: run
 
 kernel.bin: kernel-entry.o kernel.o
-	ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
+	x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 
 kernel-entry.o: kernel-entry.asm
-	nasm $< -f elf -o $@
+	nasm $< -f elf32 -o $@
 
 kernel.o: kernel.c
-	gcc -m32 -ffreestanding -Wall -Wextra -nostdlib -c $< -o $@
+	x86_64-elf-gcc -m32 -ffreestanding -Wall -Wextra -nostdlib -c $< -o $@
 
 mbr.bin: mbr.asm
 	nasm $< -f bin -o $@
@@ -19,4 +19,4 @@ run: os-image.bin
 	qemu-system-i386 -fda $<
 
 clean:
-	$(RM) *.bin *.o *.dis
+	rm -f *.bin *.o *.dis
