@@ -1,3 +1,4 @@
+; Defined in isr.c
 [extern isr_handler]
 [extern irq_handler]
 
