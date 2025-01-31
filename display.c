@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "util.h"
 
+
+
 void set_cursor(int offset) {
     offset /= 2;
     port_byte_out(REG_SCREEN_CTRL, 14);
@@ -43,6 +45,7 @@ int scroll_ln(int offset) {
             (uint8_t * )(get_offset(0, 0) + VIDEO_ADDRESS),
             MAX_COLS * (MAX_ROWS - 1) * 2
     );
+
 
     for (int col = 0; col < MAX_COLS; col++) {
         set_char_at_video_memory(' ', get_offset(col, MAX_ROWS - 1));
@@ -88,3 +91,5 @@ void clear_screen() {
     }
     set_cursor(get_offset(0, 0));
 }
+
+
