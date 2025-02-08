@@ -115,15 +115,16 @@ char *exception_messages[] = {
         "Reserved"
 };
 
-void isr_handler(registers_t *r) {
-    print_string("received interrupt: ");
-    char s[3];
-    int_to_string(r->int_no, s);
-    print_string(s);
-    print_nl();
-    print_string(exception_messages[r->int_no]);
-    print_nl();
+void isr_handler(registers_t *regs) {
+    print_string("Received interrupt: ");
+    print_int(regs->int_no);
+    print_string("\nError Code: ");
+    print_int(regs->err_code);
+    print_string("\nHalting...\n");
+
+    while (1) { asm volatile("hlt"); } // Halt system to prevent infinite loop
 }
+
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;

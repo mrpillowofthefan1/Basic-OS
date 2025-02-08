@@ -3,6 +3,18 @@
 #include "isr.h"
 #include "display.h"
 
+void handle_backspace() {
+    int offset = get_cursor();
+
+    if(offset > 0) {
+        offset -= 2;
+
+        set_char_at_video_memory(' ', offset);
+
+        set_cursor(offset);
+    }
+}
+
 void print_letter(uint8_t scancode) {
     switch (scancode) {
         case 0x0:
@@ -48,10 +60,10 @@ void print_letter(uint8_t scancode) {
             print_string("+");
             break;
         case 0x0E:
-            print_string("Backspace");
+            handle_backspace();
             break;
         case 0x0F:
-            print_string("Tab");
+            print_string("    ");
             break;
         case 0x10:
             print_string("Q");
@@ -90,7 +102,7 @@ void print_letter(uint8_t scancode) {
             print_string("]");
             break;
         case 0x1C:
-            print_string("ENTER");
+            print_nl();
             break;
         case 0x1D:
             print_string("LCtrl");
@@ -177,28 +189,48 @@ void print_letter(uint8_t scancode) {
             print_string("LAlt");
             break;
         case 0x39:
-            print_string("Space");
+            print_string(" ");
             break;
         default:
-            /* 'keuyp' event corresponds to the 'keydown' + 0x80
-             * it may still be a scancode we haven't implemented yet, or
-             * maybe a control/escape sequence */
-            if (scancode <= 0x7f) {
-                print_string("Unknown key down");
-            } else if (scancode <= 0x39 + 0x80) {
-                print_string("key up ");
-                print_letter(scancode - 0x80);
-            } else print_string("Unknown key up");
             break;
     }
 }
 
+#include "ports.h"
+#include "display.h"
+#include <stdint.h>
+
+#define BACKSPACE 0x0E
+#define ENTER 0x1C
+
+// US keyboard layout (scancode set 1)
+char scancode_table[] = {
+    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b', // Backspace
+    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', // Enter
+    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,
+    '*', 0, ' ', 0 // Spacebar
+};
+
+// Function to get the pressed key
+char get_key_pressed() {
+    uint8_t scancode = port_byte_in(0x60); // Read from keyboard port
+
+    if (scancode & 0x80) {
+        // Ignore key releases (MSB set)
+        return 0;
+    }
+
+    return scancode_table[scancode]; // Convert scancode to ASCII
+}
+
+
 static void keyboard_callback(registers_t *regs) {
     uint8_t scancode = port_byte_in(0x60);
     print_letter(scancode);
-    print_nl();
 }
 
 void init_keyboard() {
     register_interrupt_handler(IRQ1, keyboard_callback);
+
 }

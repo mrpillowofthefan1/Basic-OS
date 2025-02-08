@@ -76,6 +76,41 @@ void print_string(char *string) {
     set_cursor(offset);
 }
 
+void print_int(int num) {
+    char buffer[12];  // Enough for a 32-bit integer
+    int i = 0, is_negative = 0;
+
+    if (num == 0) {
+        buffer[i++] = '0';
+    } else {
+        if (num < 0) {
+            is_negative = 1;
+            num = -num;
+        }
+
+        while (num > 0) {
+            buffer[i++] = (num % 10) + '0';
+            num /= 10;
+        }
+
+        if (is_negative) {
+            buffer[i++] = '-';
+        }
+    }
+
+    buffer[i] = '\0';
+
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++) {
+        char temp = buffer[j];
+        buffer[j] = buffer[i - j - 1];
+        buffer[i - j - 1] = temp;
+    }
+
+    print_string(buffer);
+}
+
+
 void print_nl() {
     int newOffset = move_offset_to_new_line(get_cursor());
     if (newOffset >= MAX_ROWS * MAX_COLS * 2) {
